@@ -1,11 +1,12 @@
 {
-  description = "SRA Inventory - Next.js + Redis development environment";
+  description = "Hackerfab IITB Inventory - Next.js + Redis development environment";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
   };
 
-  outputs = { self, nixpkgs }:
+  outputs =
+    { self, nixpkgs }:
     let
       systems = [
         "x86_64-linux"
@@ -14,11 +15,11 @@
         "aarch64-darwin"
       ];
 
-      forAllSystems = f:
-        nixpkgs.lib.genAttrs systems (system: f nixpkgs.legacyPackages.${system});
+      forAllSystems = f: nixpkgs.lib.genAttrs systems (system: f nixpkgs.legacyPackages.${system});
     in
     {
-      devShells = forAllSystems (pkgs:
+      devShells = forAllSystems (
+        pkgs:
         let
           # Local Redis instance. Keeps its data inside the repo at ./.redis
           # so it never touches a system-wide Redis. Add .redis/ to .gitignore.
@@ -37,8 +38,8 @@
         {
           default = pkgs.mkShell {
             packages = with pkgs; [
-              nodejs_22        # Next.js 16 needs Node >= 20.9; 22 is current LTS
-              redis            # gives you redis-cli as well as redis-server
+              nodejs_22 # Next.js 16 needs Node >= 20.9; 22 is current LTS
+              redis # gives you redis-cli as well as redis-server
               git
               redis-dev
 
@@ -52,16 +53,16 @@
             # are dynamically linked against a normal FHS glibc. On NixOS that
             # fails unless nix-ld is enabled. These two vars make nix-ld work;
             # they are harmless on non-NixOS systems and on macOS.
-            NIX_LD_LIBRARY_PATH = pkgs.lib.optionalString pkgs.stdenv.isLinux
-              (pkgs.lib.makeLibraryPath [
+            NIX_LD_LIBRARY_PATH = pkgs.lib.optionalString pkgs.stdenv.isLinux (
+              pkgs.lib.makeLibraryPath [
                 pkgs.stdenv.cc.cc.lib
                 pkgs.zlib
                 pkgs.openssl
                 pkgs.libuv
-                pkgs.vips        # sharp, used by next/image
-              ]);
-            NIX_LD = pkgs.lib.optionalString pkgs.stdenv.isLinux
-              "${pkgs.stdenv.cc.libc}/lib/ld-linux-x86-64.so.2";
+                pkgs.vips # sharp, used by next/image
+              ]
+            );
+            NIX_LD = pkgs.lib.optionalString pkgs.stdenv.isLinux "${pkgs.stdenv.cc.libc}/lib/ld-linux-x86-64.so.2";
 
             shellHook = ''
               # Keep npm's global installs inside the repo instead of ~/.npm-global
@@ -72,7 +73,7 @@
               export NEXT_TELEMETRY_DISABLED=1
 
               echo ""
-              echo "  SRA Inventory dev shell"
+              echo "  HackerFab IITB Inventory dev shell"
               echo "  node       $(node --version)   npm $(npm --version)"
               echo ""
               echo "  npm install         install dependencies"
@@ -82,6 +83,7 @@
               echo ""
             '';
           };
-        });
+        }
+      );
     };
 }
